@@ -39,4 +39,29 @@ async def chat(request: ChatRequest):
 
     results = search(query_embedding, k=5)
 
-  
+    return ChatResponse(
+        answer=results.context,
+        sources=results.sources
+    )
+
+@app.post("/search")
+async def search_only(request: ChatRequest):
+
+    query_embedding = embed_query(request.question)
+
+    results = search(query_embedding)
+
+    return {
+        "question": request.question,
+        "num_chunks": len(results.chunks),
+        "chunks": [
+            {
+                "rank": i + 1,
+                "source": chunk.source_file,
+                "chunk_index": chunk.chunk_index,
+                "distance": round(chunk.distance, 4),
+                "text": chunk.text,
+            }
+            for i, chunk in enumerate(results.chunks)
+        ]
+    }
