@@ -1,11 +1,11 @@
 from fastapi import FastAPI
 
-
-from services.vector_store import store_chunks, search
-from services.embeddings import embed_chunks, embed_query
+from services.ingestion.vector_store import store_chunks
+from services.retrieval.search import search
+from services.ingestion.embeddings import embed_chunks, embed_query
 from models import RepoRequest, ChatRequest, ChatResponse
 from services.loader import clone_repo, load_files
-from services.chunking import chunk_files
+from services.ingestion.chunking import chunk_files
 
 app = FastAPI()
 
@@ -25,10 +25,6 @@ async def index_repo(request: RepoRequest):
     embeddings = embed_chunks(chunks)
 
     store_chunks(chunks, embeddings)
-
-    print(len(chunks))
-    print(len(embeddings))
-    print(len(embeddings[0]))
     
     return {"status": "indexed", 
             "files found": len(files), 
@@ -43,4 +39,4 @@ async def chat(request: ChatRequest):
 
     results = search(query_embedding, k=5)
 
-    
+  

@@ -1,6 +1,6 @@
 from models import Chunk
 import chromadb
-from chromadb.api.types import Metadata, Embedding, QueryResult
+from chromadb.api.types import Metadata, Embedding
 
 client = chromadb.PersistentClient(path="./chroma_db")
 
@@ -28,12 +28,5 @@ def store_chunks(
         metadatas=metadatas,
     )
 
-def search(
-    query_embedding: Embedding,
-    k: int = 5,
-)-> QueryResult:
-    return collection.query(
-        query_embeddings=[query_embedding],
-        n_results=k,
-    )
+
     
