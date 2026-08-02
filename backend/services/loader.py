@@ -23,6 +23,7 @@ IGNORED_DIRECTORIES = {
     "venv",
     ".venv",
     "__pycache__",
+    "docs_src"
 }
 
 
