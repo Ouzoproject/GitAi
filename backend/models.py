@@ -20,3 +20,19 @@ class Chunk(BaseModel):
     text: str
     source_file: str
     chunk_index: int
+
+class RetrievedChunk(BaseModel):
+    text: str
+    source_file: str
+    chunk_index: int
+    
+class SearchResult(BaseModel):
+    chunks: list[RetrievedChunk]
+
+    @property
+    def context(self) -> str:
+        return "\n\n".join(chunk.text for chunk in self.chunks)
+
+    @property
+    def sources(self) -> list[str]:
+        return sorted({chunk.source_file for chunk in self.chunks})
