@@ -25,7 +25,8 @@ class RetrievedChunk(BaseModel):
     text: str
     source_file: str
     chunk_index: int
-    
+    distance: float
+
 class SearchResult(BaseModel):
     chunks: list[RetrievedChunk]
 
