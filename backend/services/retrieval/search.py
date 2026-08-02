@@ -1,6 +1,6 @@
 from chromadb.api.types import Embedding
 from models import RetrievedChunk, SearchResult
-from ingestion.vector_store import collection
+from services.ingestion.vector_store import collection
 from typing import cast
 
 def search(query_embedding: Embedding, k: int = 5) -> SearchResult:
@@ -9,11 +9,13 @@ def search(query_embedding: Embedding, k: int = 5) -> SearchResult:
         n_results=k,
     )
 
-    if not results["documents"] or not results["metadatas"]:
+    if not results["documents"] or not results["metadatas"] or not results["distances"]:
         return SearchResult(chunks=[])
+    
 
     documents = results["documents"][0]
-    metadatas = results["metadatas"][0]
+    metadatas = results["metadatas"][0]    
+    distances = results["distances"][0]
 
     
     chunks=[
@@ -21,8 +23,9 @@ def search(query_embedding: Embedding, k: int = 5) -> SearchResult:
             text=doc,
             source_file=cast(str, meta["source_file"]),
             chunk_index=cast(int, meta["chunk_index"]),
+            distance=cast(float, distance)
         )
-        for doc, meta in zip(documents, metadatas)
+        for doc, meta, distance in zip(documents, metadatas, distances)
     ]
     
 
