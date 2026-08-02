@@ -2,6 +2,8 @@ from models import Chunk
 import chromadb
 from chromadb.api.types import Metadata, Embedding
 
+BATCH_SIZE = 2000
+
 client = chromadb.PersistentClient(path="./chroma_db")
 
 collection = client.get_or_create_collection(
@@ -20,13 +22,19 @@ def store_chunks(
         for chunk in chunks
         
     ]
+    for i in range(0, len(chunks), BATCH_SIZE):
+        batch_ids = ids[i:i + BATCH_SIZE]
+        batch_documents = documents[i:i + BATCH_SIZE]
+        batch_embeddings = embeddings[i:i + BATCH_SIZE]
+        batch_metadatas = metadatas[i:i + BATCH_SIZE]
+
+        collection.add(
+            ids=batch_ids,
+            documents=batch_documents,
+            embeddings=batch_embeddings,
+            metadatas=batch_metadatas,
+        )
     
-    collection.add(
-        ids=ids,
-        documents=documents,
-        embeddings=embeddings,
-        metadatas=metadatas,
-    )
 
 
     
