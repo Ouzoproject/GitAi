@@ -26,5 +26,6 @@ def chunk_files(files: list[SourceFile]) -> list[Chunk]:
                     chunk_index=index,
                 )
             )
+    print(f"Created {len(chunks)} chunks from {len(files)} files.")
 
     return chunks
