@@ -1,27 +1,42 @@
-from openai import OpenAI
+
+from google import genai
 from dotenv import load_dotenv
 import os
 
-load_dotenv()  # Load environment variables from .env file
+load_dotenv()
 
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=os.getenv("LLM_API_KEY"),
-)
+client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-def llm(prompt: str) -> str:
-   response = client.chat.completions.create(
-        model="openrouter/free",
-        messages=[
-            {
-                "role": "user",
-                "content": prompt
-            }
-        ],
-        temperature=0.1,
+def llm_rewriter(prompt: str) -> str:
+   try:
+    response = client.models.generate_content(
+    model="gemini-3.5-flash-lite",
+    contents=prompt    
     )
-   content = response.choices[0].message.content
+       
+   except Exception as e:
+       print(f"Error occurred while generating LLM rewrite: {e}")
+       raise
+   content = response.text
 
    if content is None:
        raise ValueError("LLM returned no content")
    return content
+
+def llm_answer(prompt: str) -> str:
+    try:
+       response = client.models.generate_content(
+           model="gemini-3.5-flash-lite",
+           contents=prompt          
+       )
+
+       print(f"LLM response: {response}")
+       content = response.text
+
+       if content is None:
+           raise ValueError("LLM returned no content")
+       
+    except Exception as e:
+       print(f"Error occurred while generating LLM answer: {e}")
+       raise
+    return content
