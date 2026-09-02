@@ -8,6 +8,7 @@ class ChatRequest(BaseModel):
     question: str
 
 class ChatResponse(BaseModel):
+    question: str
     answer: str
     sources: list[str]
 
@@ -26,6 +27,7 @@ class RetrievedChunk(BaseModel):
     source_file: str
     chunk_index: int
     distance: float
+    rerank_score: float | None = None
 
 class SearchResult(BaseModel):
     chunks: list[RetrievedChunk]
