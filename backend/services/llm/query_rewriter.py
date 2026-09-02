@@ -1,4 +1,4 @@
-from .client import llm
+from .client import llm_rewriter
 
 def rewrite_query(question: str) -> str:
 
@@ -39,6 +39,6 @@ Question:
 
 Output only the search keywords:
 """
-    response = llm(prompt)
+    response = llm_rewriter(prompt)
 
     return response.strip()
