@@ -1,13 +1,27 @@
 from fastapi import FastAPI
 
+from services.llm.query_rewriter import rewrite_query
 from services.ingestion.vector_store import store_chunks
 from services.retrieval.search import search
 from services.ingestion.embeddings import embed_chunks, embed_query
 from models import RepoRequest, ChatRequest, ChatResponse
-from services.loader import clone_repo, load_files
+from services.ingestion.loader import clone_repo, load_files
 from services.ingestion.chunking import chunk_files
+from services.retrieval.reranker import rerank
+from services.llm.client import llm_answer
+from services.retrieval.prompt_builder import build_prompt
 
 app = FastAPI()
+
+from fastapi.middleware.cors import CORSMiddleware
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.get("/health")
 async def read_health():
@@ -34,34 +48,31 @@ async def index_repo(request: RepoRequest):
 
 @app.post("/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
+    print(f"Received search request for question: {request.question}")
+    rewritten_query = rewrite_query(request.question)
+    print("Embedding query")
+    query_embedding = embed_query(rewritten_query)
 
-    query_embedding = embed_query(request.question)
+    print("Searching for relevant chunks")
 
-    results = search(query_embedding, k=5)
+    results = search(query_embedding)    
 
-    return ChatResponse(
-        answer=results.context,
-        sources=results.sources
-    )
-
-@app.post("/search")
-async def search_only(request: ChatRequest):
-
-    query_embedding = embed_query(request.question)
-
-    results = search(query_embedding)
+    print(f"Found {len(results.chunks)} chunks for query: {request.question}")
+        
+    print("reranking results")
+    final_results = rerank(rewritten_query, results)
+    print(final_results)
+    print("Building prompt for LLM")
+    prompt = build_prompt(request.question, final_results.context)
+    print("calling llm")
+    answer = llm_answer(prompt)
+    print(f"Answer: {answer}")
 
     return {
-        "question": request.question,
-        "num_chunks": len(results.chunks),
-        "chunks": [
-            {
-                "rank": i + 1,
-                "source": chunk.source_file,
-                "chunk_index": chunk.chunk_index,
-                "distance": round(chunk.distance, 4),
-                "text": chunk.text,
-            }
-            for i, chunk in enumerate(results.chunks)
-        ]
-    }
+            "question": request.question,            
+            "answer": answer,
+            "sources": list(dict.fromkeys(
+                chunk.source_file for chunk in final_results.chunks
+            ))  
+        }
+
