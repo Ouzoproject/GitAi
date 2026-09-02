@@ -3,7 +3,7 @@ from models import RetrievedChunk, SearchResult
 from services.ingestion.vector_store import collection
 from typing import cast
 
-def search(query_embedding: Embedding, k: int = 5) -> SearchResult:
+def search(query_embedding: Embedding, k: int = 40) -> SearchResult:
     results = collection.query(
         query_embeddings=[query_embedding],
         n_results=k,
