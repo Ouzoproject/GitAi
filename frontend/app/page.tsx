@@ -1,65 +1,113 @@
-import Image from "next/image";
+"use client";
+
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { indexRepository } from "@/lib/api";
 
 export default function Home() {
+  const router = useRouter();
+
+  const [repoUrl, setRepoUrl] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState("");
+  const [error, setError] = useState("");
+
+  async function handleIndex() {
+    if (!repoUrl.trim()) {
+      setError("Please enter a GitHub repository URL.");
+      return;
+    }
+
+    setLoading(true);
+    setMessage("");
+    setError("");
+
+    try {
+      await indexRepository(repoUrl);
+
+      setMessage("Repository indexed successfully!");
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong while indexing.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
+    <main className="page">
+      <div className="container home-container">
+        <div className="hero">
+          <div className="logo">⌘</div>
+
+          <h1>GitHub RAG Assistant</h1>
+
+          <p className="subtitle">
+            Ask questions about any GitHub repository using AI.
           </p>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+
+        <div className="card">
+          <label htmlFor="repo-url">GitHub Repository</label>
+
+          <input
+            id="repo-url"
+            type="text"
+            placeholder="https://github.com/owner/repository"
+            value={repoUrl}
+            onChange={(e) => setRepoUrl(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleIndex();
+              }
+            }}
+            disabled={loading}
+          />
+
+          <button
+            className="primary-button"
+            onClick={handleIndex}
+            disabled={loading}
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            {loading ? "Indexing repository..." : "Index Repository"}
+          </button>
+
+          {message && <div className="success-message">✓ {message}</div>}
+
+          {error && <div className="error-message">{error}</div>}
         </div>
-      </main>
-    </div>
+
+        <div className="divider">
+          <span>or</span>
+        </div>
+
+        <button
+          className="secondary-button"
+          onClick={() => router.push("/chat")}
+        >
+          Go to Chat →
+        </button>
+
+        <div className="features">
+          <div>
+            <strong>1. Index</strong>
+            <span>Clone and process a repository</span>
+          </div>
+
+          <div>
+            <strong>2. Search</strong>
+            <span>Retrieve relevant code and documentation</span>
+          </div>
+
+          <div>
+            <strong>3. Ask</strong>
+            <span>Get AI-powered answers</span>
+          </div>
+        </div>
+      </div>
+    </main>
   );
 }
