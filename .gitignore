@@ -1,0 +1,12 @@
+# Downloaded repositories
+**/repos/
+.venv/*
+.venv
+.env
+pyvenv.cfg
+include
+lib
+Scripts
+share
+**/chroma_db/
+**/__pycache__/
