@@ -69,10 +69,16 @@ async def chat(request: ChatRequest):
     print(f"Answer: {answer}")
 
     return {
-            "question": request.question,            
-            "answer": answer,
-            "sources": list(dict.fromkeys(
-                chunk.source_file for chunk in final_results.chunks
-            ))  
-        }
+        "question": request.question,
+        "answer": answer,
+        "sources": final_results.sources,
+        "chunks": [
+            {
+                "source": chunk.source_file,
+                "chunk_index": chunk.chunk_index,
+                "text": chunk.text,
+            }
+            for chunk in final_results.chunks
+        ],
+    }
 

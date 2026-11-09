@@ -7,10 +7,16 @@ class RepoRequest(BaseModel):
 class ChatRequest(BaseModel):
     question: str
 
+class SourceChunk(BaseModel):
+    source: str
+    chunk_index: int
+    text: str
+
 class ChatResponse(BaseModel):
     question: str
     answer: str
     sources: list[str]
+    chunks: list[SourceChunk]
 
 class SourceFile(BaseModel):
     path: str
