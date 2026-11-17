@@ -11,6 +11,7 @@ export default function Home() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [indexedRepo, setIndexedRepo] = useState("");
 
   async function handleIndex() {
     if (!repoUrl.trim()) {
@@ -21,11 +22,13 @@ export default function Home() {
     setLoading(true);
     setMessage("");
     setError("");
+    setIndexedRepo("");
 
     try {
-      await indexRepository(repoUrl);
+      const result = await indexRepository(repoUrl);
 
-      setMessage("Repository indexed successfully!");
+      setIndexedRepo(result.repo);
+      setMessage(`${result.repo} indexed successfully!`);
     } catch (err) {
       setError(
         err instanceof Error
@@ -80,16 +83,22 @@ export default function Home() {
           {error && <div className="error-message">{error}</div>}
         </div>
 
-        <div className="divider">
-          <span>or</span>
-        </div>
+        {indexedRepo && (
+          <>
+            <div className="divider">
+              <span>next</span>
+            </div>
 
-        <button
-          className="secondary-button"
-          onClick={() => router.push("/chat")}
-        >
-          Go to Chat →
-        </button>
+            <button
+              className="secondary-button"
+              onClick={() =>
+                router.push(`/chat?repo=${encodeURIComponent(indexedRepo)}`)
+              }
+            >
+              Chat with {indexedRepo} →
+            </button>
+          </>
+        )}
 
         <div className="features">
           <div>
