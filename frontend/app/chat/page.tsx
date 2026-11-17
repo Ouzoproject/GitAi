@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { askQuestion, ChatResponse } from "@/lib/api";
 
 interface Message {
@@ -10,7 +11,8 @@ interface Message {
   response?: ChatResponse;
 }
 
-export default function ChatPage() {
+function Chat() {
+  const repo = useSearchParams().get("repo") ?? "";
   const [question, setQuestion] = useState("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(false);
@@ -18,7 +20,7 @@ export default function ChatPage() {
   async function handleAsk() {
     const trimmedQuestion = question.trim();
 
-    if (!trimmedQuestion || loading) {
+    if (!trimmedQuestion || loading || !repo) {
       return;
     }
 
@@ -32,7 +34,7 @@ export default function ChatPage() {
     setLoading(true);
 
     try {
-      const response = await askQuestion(trimmedQuestion);
+      const response = await askQuestion(repo, trimmedQuestion);
 
       const assistantMessage: Message = {
         role: "assistant",
@@ -65,7 +67,7 @@ export default function ChatPage() {
 
         <div className="chat-title">
           <div className="logo small">⌘</div>
-          <span>GitHub RAG Assistant</span>
+          <span>{repo || "GitHub RAG Assistant"}</span>
         </div>
       </header>
 
@@ -75,38 +77,40 @@ export default function ChatPage() {
             <div className="empty-chat">
               <div className="empty-icon">⌕</div>
 
-              <h2>Ask about your repository</h2>
+              <h2>{repo ? `Ask about ${repo}` : "No repository selected"}</h2>
 
               <p>
-                Ask a question about the code, architecture, documentation, or
-                implementation details.
+                {repo ? (
+                  "Ask a question about the code, architecture, documentation, or implementation details."
+                ) : (
+                  <>
+                    <Link href="/">Index a repository</Link> first, then ask
+                    questions about it here.
+                  </>
+                )}
               </p>
 
-              <div className="example-questions">
-                <button
-                  onClick={() =>
-                    setQuestion("How should an API endpoint look like?")
-                  }
-                >
-                  How should an API endpoint look like?
-                </button>
+              {repo && (
+                <div className="example-questions">
+                  <button
+                    onClick={() => setQuestion("What does this project do?")}
+                  >
+                    What does this project do?
+                  </button>
 
-                <button
-                  onClick={() =>
-                    setQuestion("How should I manage database sessions?")
-                  }
-                >
-                  How should I manage database sessions?
-                </button>
+                  <button
+                    onClick={() => setQuestion("How is the code structured?")}
+                  >
+                    How is the code structured?
+                  </button>
 
-                <button
-                  onClick={() =>
-                    setQuestion("How can I override dependencies during tests?")
-                  }
-                >
-                  How can I override dependencies during tests?
-                </button>
-              </div>
+                  <button
+                    onClick={() => setQuestion("How do I run the tests?")}
+                  >
+                    How do I run the tests?
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
@@ -174,14 +178,14 @@ export default function ChatPage() {
                 handleAsk();
               }
             }}
-            disabled={loading}
+            disabled={loading || !repo}
             rows={1}
           />
 
           <button
             className="send-button"
             onClick={handleAsk}
-            disabled={loading || !question.trim()}
+            disabled={loading || !repo || !question.trim()}
           >
             →
           </button>
@@ -192,5 +196,14 @@ export default function ChatPage() {
         </p>
       </div>
     </main>
+  );
+}
+
+export default function ChatPage() {
+  // useSearchParams needs a Suspense boundary for static builds
+  return (
+    <Suspense>
+      <Chat />
+    </Suspense>
   );
 }
