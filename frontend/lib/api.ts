@@ -1,21 +1,20 @@
-const API_URL = "http://localhost:8000";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export interface IndexResponse {
-  message?: string;
-  [key: string]: unknown;
+  status: string;
+  "files found": number;
+  "found files": string[];
+  chunks: number;
+  embeddings: number;
 }
 
 export interface ChatResponse {
   question: string;
   answer: string;
-  rewritten_query?: string | null;
-  num_chunks?: number;
-  chunks?: {
-    rank: number;
+  sources: string[];
+  chunks: {
     source: string;
     chunk_index: number;
-    distance?: number;
-    rerank_score?: number;
     text: string;
   }[];
 }
@@ -26,9 +25,7 @@ export async function indexRepository(repoUrl: string): Promise<IndexResponse> {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      url: repoUrl,
-    }),
+    body: JSON.stringify({ url: repoUrl }),
   });
 
   if (!response.ok) {
@@ -45,9 +42,7 @@ export async function askQuestion(question: string): Promise<ChatResponse> {
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({
-      question,
-    }),
+    body: JSON.stringify({ question }),
   });
 
   if (!response.ok) {
