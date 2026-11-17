@@ -4,7 +4,16 @@ from pydantic import BaseModel
 class RepoRequest(BaseModel):
     url: str
 
+class IndexResponse(BaseModel):
+    status: str
+    repo: str
+    files_found: int
+    found_files: list[str]
+    chunks: int
+    embeddings: int
+
 class ChatRequest(BaseModel):
+    repo: str  # "owner/repo" of an indexed repository
     question: str
 
 class SourceChunk(BaseModel):
