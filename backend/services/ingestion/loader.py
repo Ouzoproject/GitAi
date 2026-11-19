@@ -123,6 +123,8 @@ def load_files(repo_path: Path) -> list[SourceFile]:
         # Skip unsupported extensions
         if file_path.suffix not in ALLOWED_EXTENSIONS:
             continue
+        if file_path.is_symlink() or not file_path.resolve().is_relative_to(repo_path.resolve()):
+            continue
         try:
             content = file_path.read_text(encoding="utf-8")
 
