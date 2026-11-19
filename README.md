@@ -125,4 +125,4 @@ GitAi/
 
 ## License
 
-Add a license (for example MIT) in a `LICENSE` file and name it here. Without one, others have no permission to use or modify the code.
+No license yet
