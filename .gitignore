@@ -2,7 +2,10 @@
 **/repos/
 .venv/*
 .venv
+# Environment variables and secrets
 .env
+.env.*
+!.env.example
 pyvenv.cfg
 **/chroma_db/
 **/__pycache__/
